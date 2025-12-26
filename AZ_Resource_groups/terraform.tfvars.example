@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars and set real values if needed.
+# terraform.tfvars is intentionally NOT committed.
+
+# If using Azure CLI auth (az login), you can usually leave these empty:
+subscription_id = ""
+tenant_id       = ""
+client_id       = ""
+client_secret   = ""
+
+location        = "eastus"
+resource_prefix = "tf-demo"
+environment     = "dev"
+
+tags = {
+  owner = "your-name"
+}
