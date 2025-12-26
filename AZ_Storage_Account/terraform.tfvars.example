@@ -1,0 +1,11 @@
+# Example only. Copy to terraform.tfvars for local use.
+# terraform.tfvars is intentionally ignored by .gitignore.
+
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+location        = "eastus"
+resource_prefix = "tf-demo"
+environment     = "dev"
+
+# Must be lowercase
+container_name  = "tfcontainer"
