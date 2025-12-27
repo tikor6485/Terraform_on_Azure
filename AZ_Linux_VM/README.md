@@ -1,9 +1,11 @@
-AZ Linux VM Demo
+# AZ Linux VM Demo
 
-Overview
+## Overview
+
 This demo provisions a basic Azure Linux Virtual Machine using Terraform. It creates a minimal network stack (VNet/Subnet/Public IP/NIC/NSG) and boots the VM with cloud-init using filebase64().
 
-What this demo creates
+## What this demo creates
+
   • Resource Group
   • Virtual Network (VNet)
   • Subnet
@@ -13,22 +15,25 @@ What this demo creates
   • Linux Virtual Machine (Ubuntu 22.04 LTS)
   • Random suffix for unique naming
 
-Prerequisites
+## Prerequisites
+
   • Terraform (>= 1.0)
   • Azure CLI (az) installed and logged in (az login)
   • An active Azure subscription selected (az account show / az account set)
   • An SSH keypair on your machine (use the public key in inputs)
 
-Authentication
-Option A: Azure CLI (local)
+## Authentication
+
+## Option A: Azure CLI (local)
   • az login
   • az account show
   • az account set --subscription "<SUBSCRIPTION_ID>"
 
-Option B: Service Principal (CI/CD)
+## Option B: Service Principal (CI/CD)
 Use environment variables or a secure secret store (do not hardcode secrets in files).
 
-Configuration
+## Configuration
+
   • Recommended: set subscription id via environment variable:
     export TF_VAR_subscription_id="<SUBSCRIPTION_ID>"
   • Recommended: create a local tfvars file (not committed):
@@ -37,7 +42,8 @@ Configuration
   • cloud-init:
     This demo reads cloud-init content from cloud-init.yaml.example using filebase64() and passes it to the VM as custom_data.
 
-Run
+## Run
+
 From inside this folder:
   1. terraform init
   2. terraform fmt
@@ -45,14 +51,17 @@ From inside this folder:
   4. terraform plan
   5. terraform apply
 
-SSH
+## SSH
+
   • After apply, use the output ssh_command.
   • SSH is allowed only from allowed_ssh_cidr.
 
-Cleanup
+## Cleanup
+
   • terraform destroy
 
-Notes
+## Notes
+
   • Do not set allowed_ssh_cidr to 0.0.0.0/0.
   • Do not commit terraform.tfvars or any private SSH keys.
   • VM resources may incur cost; destroy when finished.
