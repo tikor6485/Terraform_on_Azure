@@ -1,43 +1,43 @@
-locals {
+# Creates an Azure Resource Group to keep all demo resources organized and easy to clean up.
+resource "azurerm_resource_group" "rg" {
+  name     = "${var.resource_prefix}-${var.environment}-rg"
+  location = var.location
+
   tags = {
     demo        = "az-storage-account"
     environment = var.environment
     managed_by  = "terraform"
   }
-
-  rg_name = "${var.resource_prefix}-${var.environment}-rg"
 }
 
-resource "azurerm_resource_group" "tirdad" {
-  name     = local.rg_name
-  location = var.location
-  tags     = local.tags
-}
-
-resource "random_string" "tirdad" {
+# Generates a short suffix so the storage account name can be globally unique.
+resource "random_string" "suffix" {
   length  = 6
-  upper   = false
   lower   = true
   numeric = true
   special = false
+  upper   = false
 }
 
-# Storage account names must be globally unique, 3-24 chars, lowercase letters and numbers only.
-resource "azurerm_storage_account" "tirdad" {
-  name                     = "${replace(var.resource_prefix, "-", "")}${var.environment}${random_string.tirdad.result}"
-  resource_group_name      = azurerm_resource_group.tirdad.name
-  location                 = azurerm_resource_group.tirdad.location
+# Creates a Storage Account (name must be globally unique, 3-24 chars, lowercase letters and numbers only).
+resource "azurerm_storage_account" "sa" {
+  # Remove hyphens to satisfy naming rules (only lowercase letters and numbers).
+  name                     = "${replace(var.resource_prefix, "-", "")}${var.environment}${random_string.suffix.result}"
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
-  min_tls_version                 = "TLS1_2"
-  allow_nested_items_to_be_public = false
-
-  tags = local.tags
+  tags = {
+    demo        = "az-storage-account"
+    environment = var.environment
+    managed_by  = "terraform"
+  }
 }
 
-resource "azurerm_storage_container" "tirdad" {
+# Creates a private Blob Container inside the Storage Account.
+resource "azurerm_storage_container" "container" {
   name                  = var.container_name
-  storage_account_id    = azurerm_storage_account.tirdad.id
+  storage_account_id    = azurerm_storage_account.sa.id
   container_access_type = "private"
 }
