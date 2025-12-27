@@ -24,12 +24,12 @@ This demo provisions a basic Azure Linux Virtual Machine using Terraform. It cre
 
 ## Authentication
 
-## Option A: Azure CLI (local)
+Option A: Azure CLI (local)
   • az login
   • az account show
   • az account set --subscription "<SUBSCRIPTION_ID>"
 
-## Option B: Service Principal (CI/CD)
+Option B: Service Principal (CI/CD)
 Use environment variables or a secure secret store (do not hardcode secrets in files).
 
 ## Configuration
