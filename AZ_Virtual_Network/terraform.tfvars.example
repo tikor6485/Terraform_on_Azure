@@ -1,0 +1,12 @@
+# Option 1 (recommended): do NOT put secrets here. Use TF_VAR_subscription_id in your shell profile.
+# subscription_id = "2221246f-c871-43e1-bfeb-419c2d599480"
+
+# Azure region
+location = "eastus"
+
+# Naming and tagging
+environment     = "dev"
+resource_prefix = "tf-demo"
+
+# VNet CIDR
+vnet_address_space = ["10.10.0.0/16"]
