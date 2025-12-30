@@ -1,0 +1,15 @@
+# Example values for local runs (copy to terraform.tfvars if you want).
+# IMPORTANT: Do not commit terraform.tfvars if it contains real values.
+
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+# Optional: Service Principal auth (mostly for CI/CD)
+tenant_id     = ""
+client_id     = ""
+client_secret = ""
+
+# Demo defaults
+location        = "eastus"
+resource_prefix = "tf-demo"
+environment     = "dev"
+container_name  = "tfcontainer"
