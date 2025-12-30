@@ -1,0 +1,127 @@
+name: Terraform CI
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      working_directory:
+        description: "Terraform directory to run plan in (e.g., 00-foundation/01-remote-state-azure-storage/bootstrap)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
+jobs:
+  fmt_validate:
+    name: fmt + validate (all Terraform dirs)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.3"
+
+      - name: Terraform fmt (repo-wide)
+        run: terraform fmt -check -diff -recursive
+
+      - name: Terraform init+validate (each directory)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t TF_DIRS < <(
+            git ls-files '*.tf' \
+              | grep -vE '(^|/)\.terraform(/|$)' \
+              | xargs -n1 dirname \
+              | sort -u
+          )
+
+          if [ "${#TF_DIRS[@]}" -eq 0 ]; then
+            echo "No Terraform directories found."
+            exit 0
+          fi
+
+          for d in "${TF_DIRS[@]}"; do
+            echo "==> Validating: $d"
+            terraform -chdir="$d" init -backend=false -input=false -no-color
+            terraform -chdir="$d" validate -no-color
+          done
+
+  plan:
+    name: plan (manual, optional)
+    runs-on: ubuntu-latest
+    needs: [fmt_validate]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.working_directory != '' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.3"
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Export ARM env for AzureRM provider
+        run: |
+          echo "ARM_USE_OIDC=true" >> $GITHUB_ENV
+          echo "ARM_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
+          echo "ARM_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
+
+      - name: Create backend.hcl (optional)
+        if: ${{ vars.BACKEND_RESOURCE_GROUP != '' && vars.BACKEND_STORAGE_ACCOUNT != '' && vars.BACKEND_CONTAINER != '' && vars.BACKEND_KEY != '' }}
+        shell: bash
+        run: |
+          cat > backend.hcl <<'EOF'
+          resource_group_name  = "${BACKEND_RESOURCE_GROUP}"
+          storage_account_name = "${BACKEND_STORAGE_ACCOUNT}"
+          container_name       = "${BACKEND_CONTAINER}"
+          key                  = "${BACKEND_KEY}"
+          use_azuread_auth     = true
+          EOF
+
+          sed -i \
+            -e "s|\${BACKEND_RESOURCE_GROUP}|${{ vars.BACKEND_RESOURCE_GROUP }}|g" \
+            -e "s|\${BACKEND_STORAGE_ACCOUNT}|${{ vars.BACKEND_STORAGE_ACCOUNT }}|g" \
+            -e "s|\${BACKEND_CONTAINER}|${{ vars.BACKEND_CONTAINER }}|g" \
+            -e "s|\${BACKEND_KEY}|${{ vars.BACKEND_KEY }}|g" \
+            backend.hcl
+
+      - name: Terraform init
+        shell: bash
+        run: |
+          set -euo pipefail
+          wd="${{ inputs.working_directory }}"
+          if [ -f backend.hcl ]; then
+            terraform -chdir="$wd" init -backend-config="$GITHUB_WORKSPACE/backend.hcl" -input=false -no-color
+          else
+            terraform -chdir="$wd" init -backend=false -input=false -no-color
+          fi
+
+      - name: Terraform plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          wd="${{ inputs.working_directory }}"
+          terraform -chdir="$wd" plan -no-color
