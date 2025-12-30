@@ -1,0 +1,16 @@
+# Example inputs (do not commit real values in terraform.tfvars)
+
+project     = "az-104"
+environment = "dev"
+location    = "northeurope"
+
+# Optional tagging fields
+owner       = "your-name-or-team"
+cost_center = "cc-1234"
+
+additional_tags = {
+  repo = "Terraform_On_Azure"
+}
+
+# Optional: override RG name (otherwise it becomes "<project>-<environment>-rg")
+# resource_group_name_override = "az104-dev-rg"
