@@ -1,0 +1,140 @@
+# =========================================================
+# Terraform-on-Azure: .gitignore
+# Purpose:
+# - Keep Terraform local artifacts and secrets OUT of Git.
+# - Keep example/template files IN Git.
+# =========================================================
+
+# -------------------------
+# Terraform (local artifacts)
+# -------------------------
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
+
+# Plan files
+*.tfplan
+*.plan
+
+# CLI config files (local)
+.terraformrc
+terraform.rc
+
+# Override files (rare, but should not be committed)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Lockfile: usually SHOULD be committed.
+# Keep this tracked; ignore only a local backup variant.
+!.terraform.lock.hcl
+.terraform.lock.hcl.backup
+
+# Variables: do NOT commit real values
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
+
+# But DO allow example files to be committed
+!terraform.tfvars.example
+!*.tfvars.example
+
+
+# Backend config files:
+# - backend.hcl is typically local to your machine/CI (do not commit)
+# - backend.hcl.example should be committed as a template
+backend.hcl
+!backend.hcl.example
+
+# -------------------------
+# Azure / Authentication (local)
+# -------------------------
+**/.azure/*
+**/azureProfile.json
+**/AzureRmContext.json
+
+# Service principal credential dumps (if created locally)
+**/sp.json
+**/*service-principal*.json
+**/*sp-credentials*.json
+
+# -------------------------
+# Secrets / Credentials (generic)
+# -------------------------
+.env
+.env.*
+secrets.*
+*secrets*
+credentials.*
+*.pem
+*.key
+*.pfx
+*.p12
+*.jks
+*.kubeconfig
+
+# Common SSH key names (avoid accidental commits)
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# -------------------------
+# Logs / temp
+# -------------------------
+*.log
+logs/
+log/
+tmp/
+temp/
+
+# -------------------------
+# OS files
+# -------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# VS Code
+# -------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# -------------------------
+# JetBrains / IntelliJ
+# -------------------------
+.idea/
+*.iml
+
+# -------------------------
+# Python (common tooling)
+# -------------------------
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# -------------------------
+# Node (common tooling)
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -------------------------
+# Archives
+# -------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z

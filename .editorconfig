@@ -1,0 +1,30 @@
+# =========================================================
+# Terraform-on-Azure: .editorconfig
+# Purpose:
+# - Consistent formatting across editors/OS.
+# - Reduces noisy diffs in Git.
+# =========================================================
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Markdown: allow trailing spaces when used intentionally for line breaks.
+[*.md]
+trim_trailing_whitespace = false
+
+# Shell scripts: common convention is 2 spaces.
+[*.sh]
+indent_size = 2
+
+# YAML: 2 spaces is standard.
+[*.yml]
+indent_size = 2
+[*.yaml]
+indent_size = 2
