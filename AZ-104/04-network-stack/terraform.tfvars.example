@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars (local only). Do NOT commit terraform.tfvars.
+# Recommended: export TF_VAR_subscription_id instead of putting it in a file.
+
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+location        = "eastus"
+resource_prefix = "tf-demo"
+environment     = "dev"
+
+vnet_address_space       = ["10.20.0.0/16"]
+subnet_address_prefixes  = ["10.20.1.0/24"]
