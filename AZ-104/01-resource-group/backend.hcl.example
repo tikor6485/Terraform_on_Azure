@@ -1,0 +1,14 @@
+# Remote state backend configuration (Azure Storage).
+# Copy this file to backend.hcl and edit ONLY the "key" per project.
+
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+
+# Use Entra ID / Azure AD auth (recommended).
+use_azuread_auth = true
+
+# IMPORTANT:
+# - "key" MUST be unique per project (and ideally per environment).
+# - Suggested convention: az-104/<folder-name>/<env>.tfstate
+key = "az-104/01-resource-group/dev.tfstate"
