@@ -1,0 +1,15 @@
+# Azure Storage remote backend (template)
+#
+# Copy to backend.hcl (do NOT commit backend.hcl), then fill in values from your bootstrap outputs.
+#
+# IMPORTANT:
+# - key must be unique per project (and often per environment).
+# - recommended format: <track>/<project>/terraform.tfstate
+
+resource_group_name  = "tfstate-dev-rg-xxxxxx"
+storage_account_name = "tfstate<unique>xxxx"
+container_name       = "tfstate"
+
+key = "az-104/05-linux-vm/terraform.tfstate"
+
+use_azuread_auth = true

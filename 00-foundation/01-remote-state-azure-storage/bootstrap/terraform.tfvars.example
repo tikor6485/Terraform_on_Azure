@@ -1,0 +1,22 @@
+# Copy to terraform.tfvars (do not commit terraform.tfvars)
+
+# subscription_id = ""
+
+location       = "northeurope"
+environment    = "dev"
+resource_prefix = "tfstate-demo"
+
+# Recommended to avoid global Storage Account name collisions
+name_suffix = "yourname"
+
+container_name = "tfstate"
+
+# Add additional Azure AD principal object IDs to grant access
+# principal_ids = [
+#   "00000000-0000-0000-0000-000000000000",
+# ]
+principal_ids = []
+
+tags = {
+  owner = "yourname"
+}
