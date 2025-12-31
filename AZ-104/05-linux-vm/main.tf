@@ -1,155 +1,102 @@
-# Random suffix to avoid name collisions for resources that need uniqueness (or to keep demos consistent).
-resource "random_string" "suffix" {
-  length  = 6
-  upper   = false
-  special = false
-  numeric = true
-  lower   = true
+# ------------------------------------------------------------
+# AZ-104 / 05 - Linux VM
+# Creates: Linux VM
+# Reuses:  Resource Group (01) + NIC/NSG/PIP (04)
+# Option:  Adds SSH rule on existing NSG (subnet-level)
+# ------------------------------------------------------------
+
+# Reuse the Resource Group from AZ-104/01-resource-group.
+data "azurerm_resource_group" "rg" {
+  name = var.resource_group_name
 }
 
-locals {
-  demo_tag = "az-linux-vm"
-
-  rg_name     = "${var.resource_prefix}-${var.environment}-rg"
-  vnet_name   = "${var.resource_prefix}-${var.environment}-vnet"
-  subnet_name = "${var.resource_prefix}-${var.environment}-subnet"
-  nsg_name    = "${var.resource_prefix}-${var.environment}-nsg"
-  pip_name    = "${var.resource_prefix}-${var.environment}-pip"
-  nic_name    = "${var.resource_prefix}-${var.environment}-nic"
-  vm_name     = "${var.resource_prefix}-${var.environment}-vm"
-
-  # file() does not expand "~" unless we expand it first.
-  ssh_key_path = pathexpand(var.ssh_public_key_path)
-
-  tags = {
-    demo        = local.demo_tag
-    environment = var.environment
-    managed_by  = "terraform"
-  }
+# Reuse NIC from AZ-104/04-network-stack.
+data "azurerm_network_interface" "nic" {
+  name                = var.nic_name
+  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
-# Resource Group: logical container for everything in this demo.
-resource "azurerm_resource_group" "rg" {
-  name     = local.rg_name
-  location = var.location
-  tags     = local.tags
+# Reuse NSG from AZ-104/04-network-stack (subnet-level NSG).
+data "azurerm_network_security_group" "nsg" {
+  name                = var.nsg_name
+  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
-# Virtual Network (VNet): private network boundary in Azure.
-resource "azurerm_virtual_network" "vnet" {
-  name                = local.vnet_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  address_space       = var.vnet_address_space
-  tags                = local.tags
+# Reuse Public IP from AZ-104/04-network-stack.
+data "azurerm_public_ip" "pip" {
+  name                = var.public_ip_name
+  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
-# Subnet: network segment inside the VNet where the VM NIC attaches.
-resource "azurerm_subnet" "subnet" {
-  name                 = local.subnet_name
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = var.subnet_address_prefixes
+# Optional: allow SSH on the existing subnet NSG.
+# Note: NSG itself is created in stack 04; this stack manages only the rule.
+resource "azurerm_network_security_rule" "allow_ssh" {
+  count = var.enable_ssh ? 1 : 0
+
+  name                       = "${local.name_prefix}-allow-ssh"
+  priority                   = var.ssh_rule_priority
+  direction                  = "Inbound"
+  access                     = "Allow"
+  protocol                   = "Tcp"
+  source_port_range          = "*"
+  destination_port_range     = "22"
+  source_address_prefixes    = var.ssh_source_cidrs
+  destination_address_prefix = "*"
+
+  resource_group_name         = data.azurerm_resource_group.rg.name
+  network_security_group_name = data.azurerm_network_security_group.nsg.name
 }
 
-# NSG: basic firewall rules for the subnet/NIC (SSH + HTTP).
-resource "azurerm_network_security_group" "nsg" {
-  name                = local.nsg_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  tags                = local.tags
-
-  security_rule {
-    name                       = "allow-ssh"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "allow-http"
-    priority                   = 110
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-}
-
-# Public IP: static public address for the VM (via NIC association).
-resource "azurerm_public_ip" "pip" {
-  name                = local.pip_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-
-  allocation_method = "Static"
-  sku               = "Standard"
-
-  tags = local.tags
-}
-
-# Network Interface: attaches VM to subnet and public IP.
-resource "azurerm_network_interface" "nic" {
-  name                = local.nic_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  tags                = local.tags
-
-  ip_configuration {
-    name                          = "ipconfig1"
-    subnet_id                     = azurerm_subnet.subnet.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.pip.id
-  }
-}
-
-# Associate NSG with the NIC.
-resource "azurerm_network_interface_security_group_association" "nic_nsg" {
-  network_interface_id      = azurerm_network_interface.nic.id
-  network_security_group_id = azurerm_network_security_group.nsg.id
-}
-
-# Linux VM: uses file() for SSH key and filebase64() for cloud-init custom_data.
+# Linux VM attached to the existing NIC.
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = local.vm_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
+  name                = (var.vm_name != "" ? var.vm_name : "${local.name_prefix}-vm")
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = var.location
   size                = var.vm_size
-  admin_username      = var.admin_username
+
+  admin_username                  = var.admin_username
+  disable_password_authentication = true
 
   network_interface_ids = [
-    azurerm_network_interface.nic.id
+    data.azurerm_network_interface.nic.id
   ]
-
-  disable_password_authentication = true
 
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file(local.ssh_key_path)
+    public_key = var.admin_ssh_public_key
   }
 
-  # cloud-init will run on first boot (install nginx + write a test page).
-  custom_data = filebase64(var.cloud_init_file)
+  # cloud-init must be base64-encoded; if file is missing, set to null.
+  custom_data = try(base64encode(file(var.cloud_init_file)), null)
 
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
 
+  # Ubuntu 22.04 LTS
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
+    sku       = "22_04-lts-gen2"
     version   = "latest"
   }
 
+  # Guardrails: prevent accidental cross-region deployments.
+  lifecycle {
+    precondition {
+      condition     = var.location == data.azurerm_resource_group.rg.location
+      error_message = "location must match the Resource Group location. Set var.location to the RG region."
+    }
+    precondition {
+      condition     = var.location == data.azurerm_network_interface.nic.location
+      error_message = "location must match the NIC location. Ensure you're reusing the correct NIC."
+    }
+  }
+
   tags = local.tags
+
+  depends_on = [
+    azurerm_network_security_rule.allow_ssh
+  ]
 }

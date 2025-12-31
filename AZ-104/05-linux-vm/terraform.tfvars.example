@@ -1,16 +1,28 @@
-# Recommended: do NOT commit terraform.tfvars. Use env var instead:
-# export TF_VAR_subscription_id="YOUR_SUBSCRIPTION_ID"
+project     = "az-104"
+environment = "dev"
+location    = "northeurope"
 
-subscription_id = ""
+# Dependencies from previous stacks:
+resource_group_name = "az-104-dev-rg"
+nic_name            = "az-104-dev-nic"
+nsg_name            = "az-104-dev-nsg"
+public_ip_name      = "az-104-dev-pip"
 
-location        = "eastus"
-environment     = "dev"
-resource_prefix = "tf-demo"
+owner       = ""
+cost_center = ""
+additional_tags = {}
 
-vnet_address_space       = ["10.10.0.0/16"]
-subnet_address_prefixes  = ["10.10.1.0/24"]
+vm_size  = "Standard_B1s"
+vm_name  = ""
+admin_username = "azureuser"
 
-admin_username        = "azureuser"
-ssh_public_key_path   = "~/.ssh/id_ed25519.pub"
-cloud_init_file       = "cloud-init.yaml.example"
-vm_size               = "Standard_B1s"
+# Put the *content* of your public key here or export via TF_VAR_admin_ssh_public_key.
+admin_ssh_public_key = "ssh-ed25519 AAAA...REPLACE_ME"
+
+# Optional cloud-init (copy cloud-init.yaml.example -> cloud-init.yaml)
+cloud_init_file = "cloud-init.yaml"
+
+# SSH (recommended: your IP /32)
+enable_ssh        = true
+ssh_source_cidrs  = ["0.0.0.0/0"]
+ssh_rule_priority = 100
