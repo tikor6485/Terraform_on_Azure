@@ -1,35 +1,63 @@
-variable "subscription_id" {
-  type        = string
-  description = "Azure subscription id. Recommended: export TF_VAR_subscription_id."
-  default     = ""
-}
+# -------------------------
+# Core naming + tagging inputs (aligned across all AZ-104 folders)
+# -------------------------
 
-variable "location" {
+variable "project" {
   type        = string
-  description = "Azure region for resources."
-  default     = "eastus"
-}
-
-variable "resource_prefix" {
-  type        = string
-  description = "Prefix used in resource names."
-  default     = "tf-demo"
+  description = "Project identifier used in naming and tagging (e.g., az-104)."
+  default     = "az-104"
 }
 
 variable "environment" {
   type        = string
-  description = "Environment name used in resource names and tags."
+  description = "Environment label (e.g., dev, test, prod)."
   default     = "dev"
 }
 
-variable "vnet_address_space" {
-  type        = list(string)
-  description = "VNet address space CIDRs."
-  default     = ["10.20.0.0/16"]
+variable "location" {
+  type        = string
+  description = "Azure region for resources in this folder (must match RG/VNet location)."
+  default     = "northeurope"
 }
+
+variable "owner" {
+  type        = string
+  description = "Owner tag (team/person)."
+  default     = ""
+}
+
+variable "cost_center" {
+  type        = string
+  description = "Cost center tag."
+  default     = ""
+}
+
+variable "additional_tags" {
+  type        = map(string)
+  description = "Additional tags to merge into the standard tag set."
+  default     = {}
+}
+
+# -------------------------
+# Dependencies
+# -------------------------
+
+variable "resource_group_name" {
+  type        = string
+  description = "Existing Resource Group name to reuse (created by AZ-104/01-resource-group)."
+}
+
+variable "vnet_name" {
+  type        = string
+  description = "Existing Virtual Network name to reuse (created by AZ-104/03-virtual-network)."
+}
+
+# -------------------------
+# Network inputs
+# -------------------------
 
 variable "subnet_address_prefixes" {
   type        = list(string)
-  description = "Subnet address prefixes CIDRs."
-  default     = ["10.20.1.0/24"]
+  description = "Subnet CIDR prefixes."
+  default     = ["10.10.1.0/24"]
 }

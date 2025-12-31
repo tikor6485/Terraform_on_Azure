@@ -1,11 +1,15 @@
-# Copy to terraform.tfvars (local only). Do NOT commit terraform.tfvars.
-# Recommended: export TF_VAR_subscription_id instead of putting it in a file.
+project            = "az-104"
+environment        = "dev"
+location           = "northeurope"
 
-subscription_id = "00000000-0000-0000-0000-000000000000"
+# Reuse outputs from previous stacks:
+resource_group_name = "az-104-dev-rg"
+vnet_name           = "az-104-dev-vnet"
 
-location        = "eastus"
-resource_prefix = "tf-demo"
-environment     = "dev"
+owner       = ""
+cost_center = ""
 
-vnet_address_space       = ["10.20.0.0/16"]
-subnet_address_prefixes  = ["10.20.1.0/24"]
+additional_tags = {}
+
+# Subnet inside the VNet (03 uses 10.10.0.0/16 by default).
+subnet_address_prefixes = ["10.10.1.0/24"]

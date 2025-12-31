@@ -1,58 +1,80 @@
-# Resource Group: logical container for all resources in this demo.
-resource "azurerm_resource_group" "rg" {
-  name     = "${var.resource_prefix}-${var.environment}-rg"
-  location = var.location
+# ------------------------------------------------------------
+# AZ-104 / 04 - Network Stack
+# Creates: Subnet + NSG + Public IP + NIC
+# Reuses:  Resource Group (01) + Virtual Network (03)
+# ------------------------------------------------------------
 
-  tags = {
-    demo        = "az-network-stack"
-    environment = var.environment
-    managed_by  = "terraform"
-  }
+# Reuse the Resource Group from AZ-104/01-resource-group.
+data "azurerm_resource_group" "rg" {
+  name = var.resource_group_name
 }
 
-# Virtual Network (VNet): private network boundary in Azure.
-resource "azurerm_virtual_network" "vnet" {
-  name                = "${var.resource_prefix}-${var.environment}-vnet"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  address_space       = var.vnet_address_space
-
-  tags = {
-    demo        = "az-network-stack"
-    environment = var.environment
-    managed_by  = "terraform"
-  }
+# Reuse the Virtual Network from AZ-104/03-virtual-network.
+data "azurerm_virtual_network" "vnet" {
+  name                = var.vnet_name
+  resource_group_name = data.azurerm_resource_group.rg.name
 }
 
-# Subnet: a segment inside the VNet where NICs/VMs attach.
+# Network Security Group: baseline security boundary for the subnet.
+resource "azurerm_network_security_group" "nsg" {
+  name                = "${local.name_prefix}-nsg"
+  location            = var.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  # Guardrail: prevent accidental cross-region deployments.
+  lifecycle {
+    precondition {
+      condition     = var.location == data.azurerm_resource_group.rg.location
+      error_message = "location must match the Resource Group location. Set var.location to the RG region."
+    }
+    precondition {
+      condition     = var.location == data.azurerm_virtual_network.vnet.location
+      error_message = "location must match the VNet location. Ensure you're reusing the correct VNet."
+    }
+  }
+
+  tags = local.tags
+}
+
+# Subnet: segment inside the VNet where NICs/VMs will attach.
 resource "azurerm_subnet" "subnet" {
-  name                 = "${var.resource_prefix}-${var.environment}-subnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
+  name                 = "${local.name_prefix}-subnet"
+  resource_group_name  = data.azurerm_resource_group.rg.name
+  virtual_network_name = data.azurerm_virtual_network.vnet.name
   address_prefixes     = var.subnet_address_prefixes
 }
 
-# Public IP: allocates a public address (useful for internet-facing workloads).
+# Associate NSG with the subnet (recommended baseline).
+resource "azurerm_subnet_network_security_group_association" "subnet_nsg" {
+  subnet_id                 = azurerm_subnet.subnet.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
+# Public IP: static + standard SKU for future internet-facing labs.
 resource "azurerm_public_ip" "pip" {
-  name                = "${var.resource_prefix}-${var.environment}-pip"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  name                = "${local.name_prefix}-pip"
+  location            = var.location
+  resource_group_name = data.azurerm_resource_group.rg.name
 
   allocation_method = "Static"
   sku               = "Standard"
 
-  tags = {
-    demo        = "az-network-stack"
-    environment = var.environment
-    managed_by  = "terraform"
+  # Guardrail: prevent accidental cross-region deployments.
+  lifecycle {
+    precondition {
+      condition     = var.location == data.azurerm_resource_group.rg.location
+      error_message = "location must match the Resource Group location. Set var.location to the RG region."
+    }
   }
+
+  tags = local.tags
 }
 
-# Network Interface (NIC): connects a compute resource (like a VM) to the subnet and optional public IP.
+# Network Interface: attaches to subnet and optionally gets a Public IP.
 resource "azurerm_network_interface" "nic" {
-  name                = "${var.resource_prefix}-${var.environment}-nic"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  name                = "${local.name_prefix}-nic"
+  location            = var.location
+  resource_group_name = data.azurerm_resource_group.rg.name
 
   ip_configuration {
     name                          = "ipconfig1"
@@ -61,9 +83,17 @@ resource "azurerm_network_interface" "nic" {
     public_ip_address_id          = azurerm_public_ip.pip.id
   }
 
-  tags = {
-    demo        = "az-network-stack"
-    environment = var.environment
-    managed_by  = "terraform"
+  # Guardrail: prevent accidental cross-region deployments.
+  lifecycle {
+    precondition {
+      condition     = var.location == data.azurerm_resource_group.rg.location
+      error_message = "location must match the Resource Group location. Set var.location to the RG region."
+    }
   }
+
+  tags = local.tags
+
+  depends_on = [
+    azurerm_subnet_network_security_group_association.subnet_nsg
+  ]
 }
