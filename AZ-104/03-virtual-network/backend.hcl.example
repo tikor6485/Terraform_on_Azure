@@ -1,0 +1,7 @@
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+
+# Key must be unique per project (and ideally per environment).
+key = "az-104/03-virtual-network/dev.tfstate"

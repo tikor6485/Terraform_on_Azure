@@ -1,27 +1,26 @@
-# Create a Resource Group to logically group all demo resources together.
-resource "azurerm_resource_group" "rg" {
-  name     = "${var.resource_prefix}-${var.environment}-rg"
-  location = var.location
+# ------------------------------------------------------------
+# AZ-104 / 03 - Virtual Network (reuse RG, standard naming/tags)
+# ------------------------------------------------------------
 
-  tags = {
-    demo        = "az-virtual-network"
-    environment = var.environment
-    managed_by  = "terraform"
-  }
+# Reuse the Resource Group from AZ-104/01-resource-group.
+data "azurerm_resource_group" "rg" {
+  name = var.resource_group_name
 }
 
-# Create a Virtual Network (VNet) as the network boundary for Azure resources.
+# Virtual Network in the existing Resource Group.
 resource "azurerm_virtual_network" "vnet" {
-  name                = "${var.resource_prefix}-${var.environment}-vnet"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  name                = "${local.name_prefix}-vnet"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = var.location
+  address_space       = var.vnet_address_space
 
-  # VNet CIDR(s). Example: ["10.10.0.0/16"]
-  address_space = var.vnet_address_space
-
-  tags = {
-    demo        = "az-virtual-network"
-    environment = var.environment
-    managed_by  = "terraform"
+  # Guardrail: prevent accidental cross-region deployments.
+  lifecycle {
+    precondition {
+      condition     = var.location == data.azurerm_resource_group.rg.location
+      error_message = "location must match the Resource Group location. Set var.location to the RG region."
+    }
   }
+
+  tags = local.tags
 }

@@ -1,31 +1,22 @@
-# AZ Virtual Network (VNet) Demo
+# AZ-104 / 03 - Virtual Network
 
-## Overview
-This demo creates a Resource Group and a Virtual Network (VNet) in Azure using Terraform.
-
-## What this demo creates
-	•	Resource Group
-	•	Virtual Network (VNet) with an address space (CIDR)
+Creates an Azure Virtual Network in an existing Resource Group.
 
 ## Prerequisites
-	•	Azure CLI installed and logged in (az login)
-	•	Terraform installed
-	•	You must have an Azure subscription selected (az account show / az account set)
-
-## Configuration
-	•	Recommended: set subscription id as an environment variable (TF_VAR_subscription_id) so nothing sensitive is stored in files.
-	•	You can copy terraform.tfvars.example to terraform.tfvars and adjust values, but do not commit terraform.tfvars to Git.
+- Run AZ-104/01-resource-group first (to create the RG)
+- Azure CLI logged in (`az login`)
+- Set subscription context:
+  - `az account set --subscription <SUBSCRIPTION_ID>`
+  - `export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"`
 
 ## Run
-	1.	Go to this demo folder
-	2.	terraform init
-	3.	terraform validate
-	4.	terraform plan
-	5.	terraform apply
+1) Copy backend template:
+- `cp backend.hcl.example backend.hcl` (edit values)
 
-## Cleanup
-	•	terraform destroy
+2) Init/Plan/Apply:
+- `terraform init -backend-config=backend.hcl -reconfigure`
+- `terraform plan`
+- `terraform apply`
 
-## Notes
-	•	Resource names use: resource_prefix + environment to stay consistent across demos.
-	•	VNet address space must be a valid CIDR block list (example: 10.10.0.0/16).
+## Clean up
+- `terraform destroy`
