@@ -1,16 +1,13 @@
-# Creates an Azure Resource Group to keep all demo resources organized and easy to clean up.
-resource "azurerm_resource_group" "rg" {
-  name     = "${var.resource_prefix}-${var.environment}-rg"
-  location = var.location
+# ------------------------------------------------------------
+# AZ-104 / 02 - Storage Account (reuse RG, standard naming/tags)
+# ------------------------------------------------------------
 
-  tags = {
-    demo        = "az-storage-account"
-    environment = var.environment
-    managed_by  = "terraform"
-  }
+# Reuse the Resource Group from AZ-104/01-resource-group.
+data "azurerm_resource_group" "rg" {
+  name = var.resource_group_name
 }
 
-# Generates a short suffix so the storage account name can be globally unique.
+# Random suffix to make the Storage Account name globally unique.
 resource "random_string" "suffix" {
   length  = 6
   lower   = true
@@ -19,23 +16,32 @@ resource "random_string" "suffix" {
   upper   = false
 }
 
-# Creates a Storage Account (name must be globally unique, 3-24 chars, lowercase letters and numbers only).
+# Storage Account
 resource "azurerm_storage_account" "sa" {
-  # Remove hyphens to satisfy naming rules (only lowercase letters and numbers).
-  name                     = "${replace(var.resource_prefix, "-", "")}${var.environment}${random_string.suffix.result}"
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+  name                = "${local.storage_account_name_base}${random_string.suffix.result}"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = var.location
 
-  tags = {
-    demo        = "az-storage-account"
-    environment = var.environment
-    managed_by  = "terraform"
+  # Production-relevant defaults (basic baseline; can be hardened later in AZ-500).
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  account_kind                    = "StorageV2"
+  min_tls_version                 = "TLS1_2"
+  https_traffic_only_enabled      = true
+  allow_nested_items_to_be_public = false
+
+  # Ensure you're not accidentally deploying to a different region than the RG.
+  lifecycle {
+    precondition {
+      condition     = var.location == data.azurerm_resource_group.rg.location
+      error_message = "location must match the Resource Group location. Set var.location to the RG region."
+    }
   }
+
+  tags = local.tags
 }
 
-# Creates a private Blob Container inside the Storage Account.
+# Optional container (useful for simple labs / app assets).
 resource "azurerm_storage_container" "container" {
   name                  = var.container_name
   storage_account_id    = azurerm_storage_account.sa.id
