@@ -1,15 +1,10 @@
-# Example values for local runs (copy to terraform.tfvars if you want).
-# IMPORTANT: Do not commit terraform.tfvars if it contains real values.
+project           = "az-104"
+environment       = "dev"
+location          = "northeurope"
+resource_group_name = "az-104-dev-rg"
 
-subscription_id = "00000000-0000-0000-0000-000000000000"
+owner       = ""
+cost_center = ""
 
-# Optional: Service Principal auth (mostly for CI/CD)
-tenant_id     = ""
-client_id     = ""
-client_secret = ""
-
-# Demo defaults
-location        = "eastus"
-resource_prefix = "tf-demo"
-environment     = "dev"
-container_name  = "tfcontainer"
+additional_tags = {}
+container_name  = "data"
