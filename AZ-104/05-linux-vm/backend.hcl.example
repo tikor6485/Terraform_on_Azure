@@ -1,0 +1,4 @@
+resource_group_name  = "az-104-dev-rg"
+storage_account_name = "REPLACE_WITH_YOUR_TFSTATE_STORAGE_ACCOUNT"
+container_name       = "tfstate"
+key                  = "az-104/05-linux-vm/terraform.tfstate"

@@ -1,59 +1,122 @@
-variable "subscription_id" {
-  description = "Azure subscription id. Recommended: set via TF_VAR_subscription_id environment variable."
-  type        = string
-  default     = ""
-}
+# -------------------------
+# Core naming + tagging inputs
+# -------------------------
 
-variable "location" {
-  description = "Azure region for all resources."
+variable "project" {
   type        = string
-  default     = "northeurope"
+  description = "Project identifier used in naming and tagging (e.g., az-104)."
+  default     = "az-104"
 }
 
 variable "environment" {
-  description = "Environment name (dev/test/prod)."
   type        = string
+  description = "Environment label (e.g., dev, test, prod)."
   default     = "dev"
 }
 
-variable "resource_prefix" {
-  description = "Prefix used in resource names."
+variable "location" {
   type        = string
-  default     = "tf-demo"
+  description = "Azure region for resources in this folder (must match RG/NIC/NSG location)."
+  default     = "northeurope"
 }
 
-variable "vnet_address_space" {
-  description = "VNet CIDR list."
-  type        = list(string)
-  default     = ["10.10.0.0/16"]
+variable "owner" {
+  type        = string
+  description = "Owner tag (team/person)."
+  default     = ""
 }
 
-variable "subnet_address_prefixes" {
-  description = "Subnet CIDR list."
-  type        = list(string)
-  default     = ["10.10.1.0/24"]
+variable "cost_center" {
+  type        = string
+  description = "Cost center tag."
+  default     = ""
+}
+
+variable "additional_tags" {
+  type        = map(string)
+  description = "Additional tags to merge into the standard tag set."
+  default     = {}
+}
+
+# -------------------------
+# Dependencies (from previous stacks)
+# -------------------------
+
+variable "resource_group_name" {
+  type        = string
+  description = "Existing Resource Group name to reuse (created by AZ-104/01-resource-group)."
+}
+
+variable "nic_name" {
+  type        = string
+  description = "Existing Network Interface name to reuse (created by AZ-104/04-network-stack)."
+}
+
+variable "nsg_name" {
+  type        = string
+  description = "Existing Network Security Group name to reuse (created by AZ-104/04-network-stack)."
+}
+
+variable "public_ip_name" {
+  type        = string
+  description = "Existing Public IP name to reuse (created by AZ-104/04-network-stack)."
+}
+
+# -------------------------
+# VM inputs
+# -------------------------
+
+variable "vm_size" {
+  type        = string
+  description = "VM size."
+  default     = "Standard_D2s_v4"
+}
+
+variable "vm_name" {
+  type        = string
+  description = "Optional override for VM name. If empty, a standard name is used."
+  default     = ""
 }
 
 variable "admin_username" {
-  description = "Linux VM admin username."
   type        = string
+  description = "Admin username for the Linux VM."
   default     = "azureuser"
 }
 
-variable "ssh_public_key_path" {
-  description = "Path to SSH public key used for VM login."
+variable "admin_ssh_public_key" {
   type        = string
-  default     = "~/.ssh/id_ed25519.pub"
+  description = "SSH public key content for admin login (e.g., cat ~/.ssh/id_ed25519.pub)."
+  validation {
+    condition     = length(trimspace(var.admin_ssh_public_key)) > 0
+    error_message = "admin_ssh_public_key must not be empty."
+  }
 }
 
 variable "cloud_init_file" {
-  description = "Cloud-init file path. Terraform will send it via custom_data using filebase64()."
   type        = string
-  default     = "cloud-init.yaml.example"
+  description = "Optional cloud-init file path. If the file is missing, custom_data will be null."
+  default     = "cloud-init.yaml"
 }
 
-variable "vm_size" {
-  description = "Azure VM size."
-  type        = string
-  default     = "Standard_D2s_v4"
+# -------------------------
+# Optional SSH rule on existing NSG (subnet-level)
+# -------------------------
+
+variable "enable_ssh" {
+  type        = bool
+  description = "Whether to add an inbound SSH allow rule to the existing NSG."
+  default     = true
+}
+
+variable "ssh_source_cidrs" {
+  type        = list(string)
+  description = "Allowed source CIDRs for SSH (recommended: your public IP /32)."
+  default     = ["0.0.0.0/0"]
+}
+
+variable "ssh_rule_priority" {
+  type        = number
+  description = "NSG rule priority for SSH."
+  default     = 100
 }

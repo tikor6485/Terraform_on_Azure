@@ -1,75 +1,54 @@
-# AZ Linux VM Demo
+# AZ-104 / 05 - Linux VM
 
-## Overview
+Creates a Linux VM and attaches it to an existing NIC.
 
-This demo provisions a basic Azure Linux Virtual Machine using Terraform. It creates a minimal network stack (VNet/Subnet/Public IP/NIC/NSG) and boots the VM with cloud-init using filebase64().
+This folder reuses:
+- Resource Group created by `AZ-104/01-resource-group`
+- NIC / NSG / Public IP created by `AZ-104/04-network-stack`
 
-## What this demo creates
-
-• Resource Group  
-• Virtual Network (VNet)  
-• Subnet  
-• Public IP (Static, Standard)  
-• Network Security Group (NSG) + SSH rule (restricted)  
-• Network Interface (NIC) + NSG association  
-• Linux Virtual Machine (Ubuntu 22.04 LTS)  
-• Random suffix for unique naming  
+Optionally, it also adds an inbound SSH allow rule (22) to the existing subnet-level NSG.
 
 ## Prerequisites
+- Run `AZ-104/01-resource-group` (apply)
+- Run `AZ-104/04-network-stack` (apply)
+- Azure CLI logged in: `az login`
+- Set subscription context (recommended):
+  - `az account set --subscription <SUBSCRIPTION_ID>`
+  - `export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"`
 
-• Terraform (>= 1.0)  
-• Azure CLI installed and logged in (az login)  
-• An active Azure subscription selected (az account show / az account set)  
-• An SSH keypair on your machine (use the public key in inputs)  
+## Prepare inputs
 
-## Authentication
+### Backend
+1) Copy backend template:
+- `cp backend.hcl.example backend.hcl` (edit values, especially `key`)
 
-Option A: Azure CLI (local)
-```
-az login
-az account show
-az account set --subscription "<SUBSCRIPTION_ID>"
-```
+2) Init:
+- `terraform init -backend-config=backend.hcl -reconfigure`
 
-Option B: Service Principal (CI/CD)  
-Use environment variables or a secure secret store (do not hardcode secrets in files).
+### Dependencies from previous stacks
+Example:
+- `export TF_VAR_resource_group_name="$(cd ../01-resource-group && terraform output -raw resource_group_name)"`
+- `export TF_VAR_nic_name="$(cd ../04-network-stack && terraform output -raw nic_name)"`
+- `export TF_VAR_nsg_name="$(cd ../04-network-stack && terraform output -raw nsg_name)"`
+- `export TF_VAR_public_ip_name="$(cd ../04-network-stack && terraform output -raw public_ip_name)"`
 
-## Configuration
+### SSH key
+Recommended (no secrets in tfvars):
+- `export TF_VAR_admin_ssh_public_key="$(cat ~/.ssh/id_ed25519.pub)"`
 
-• Recommended: set subscription id via environment variable:
-```
-export TF_VAR_subscription_id="<SUBSCRIPTION_ID>"
-```
-
-• Recommended: create a local tfvars file (not committed):
-```
-cp terraform.tfvars.example terraform.tfvars
-```
-Fill in admin_public_ssh_key and allowed_ssh_cidr (your public IP /32).
-
-• cloud-init:  
-This demo reads cloud-init content from cloud-init.yaml.example using filebase64() and passes it to the VM as custom_data.
+## cloud-init (optional)
+- Copy: `cp cloud-init.yaml.example cloud-init.yaml`
+- Edit as needed
 
 ## Run
+- `terraform fmt`
+- `terraform validate`
+- `terraform plan`
+- `terraform apply`
 
-From inside this folder:
-1. terraform init
-2. terraform fmt
-3. terraform validate
-4. terraform plan
-5. terraform apply
+## Verify
+- `terraform output public_ip_address`
+- `terraform output ssh_command`
 
-## SSH
-
-• After apply, use the output ssh_command.  
-• SSH is allowed only from allowed_ssh_cidr.  
-
-## Cleanup
-
-• terraform destroy
-
-## Notes
-
-• Do not set allowed_ssh_cidr to 0.0.0.0/0.  
-• Do not commit terraform.tfvars or any private SSH keys.  
-• VM resources may incur cost; destroy when finished.
+## Clean up
+- `terraform destroy`
