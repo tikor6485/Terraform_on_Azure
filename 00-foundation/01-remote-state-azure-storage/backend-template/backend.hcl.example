@@ -13,3 +13,6 @@ container_name       = "tfstate"
 key = "az-104/05-linux-vm/terraform.tfstate"
 
 use_azuread_auth = true
+
+## Purpose
+This folder contains template files only. Do not run Terraform here.
