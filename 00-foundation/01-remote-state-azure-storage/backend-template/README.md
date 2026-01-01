@@ -49,3 +49,6 @@ This setup expects you to authenticate via Azure CLI:
 - az account set --subscription <SUBSCRIPTION_ID>
 
 Backend auth uses Azure AD (`use_azuread_auth = true`), so ensure your identity has Blob Data Contributor permissions on the state container.
+
+## Purpose
+This folder contains template files only. Do not run Terraform here.
