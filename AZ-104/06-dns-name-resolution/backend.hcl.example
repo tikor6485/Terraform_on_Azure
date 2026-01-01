@@ -1,0 +1,11 @@
+# Azure remote state backend (template).
+# Copy this file to backend.hcl and adjust values if needed.
+# IMPORTANT: Do NOT commit backend.hcl (it is machine/CI specific).
+
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+
+# Key must be unique per folder/environment.
+key = "az-104/06-dns-name-resolution/terraform.tfstate"

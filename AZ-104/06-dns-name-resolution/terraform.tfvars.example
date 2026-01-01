@@ -1,0 +1,23 @@
+# Example values for this stack.
+# Copy to terraform.tfvars for local use (do not commit terraform.tfvars).
+
+project     = "az-104"
+environment = "dev"
+location    = "northeurope"
+
+# Required (must match existing stacks)
+resource_group_name = "az-104-dev-rg"
+vnet_name           = "az-104-dev-vnet"
+
+# Optional
+# private_dns_zone_name     = "az-104-dev.internal"
+# registration_enabled      = false
+# test_a_record_name        = "test"
+# test_a_record_ip          = "10.10.1.10"
+
+# Optional tagging
+# owner       = "your-name"
+# cost_center = "cc-123"
+# additional_tags = {
+#   purpose = "training"
+# }
