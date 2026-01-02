@@ -1,0 +1,26 @@
+# Example tfvars for local testing.
+# Copy to terraform.tfvars (do NOT commit real values).
+
+resource_group_name = "az-104-dev-rg"
+location            = "northeurope"
+
+# Optional overrides:
+# lb_sku        = "Standard"
+# lb_name       = "az-104-dev-lb"
+# public_ip_name = "az-104-dev-lb-pip"
+# frontend_port = 80
+# backend_port  = 80
+# probe_port    = 80
+# probe_protocol = "Tcp"
+
+# Optional backend NIC attachments (example placeholders):
+# backend_nics = [
+#   {
+#     nic_id = "/subscriptions/<SUB>/resourceGroups/<RG>/providers/Microsoft.Network/networkInterfaces/<NIC1>"
+#     ip_configuration_name = "ipconfig1"
+#   },
+#   {
+#     nic_id = "/subscriptions/<SUB>/resourceGroups/<RG>/providers/Microsoft.Network/networkInterfaces/<NIC2>"
+#     ip_configuration_name = "ipconfig1"
+#   }
+# ]
