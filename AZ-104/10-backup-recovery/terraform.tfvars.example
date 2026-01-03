@@ -1,0 +1,24 @@
+# Example values (do not commit terraform.tfvars if it contains sensitive values).
+
+# Required (dependency from stack 01)
+resource_group_name = "az-104-dev-rg"
+
+# Optional tagging
+owner       = ""
+cost_center = ""
+additional_tags = {}
+
+# Vault settings
+vault_sku           = "Standard"
+soft_delete_enabled = true
+
+# Backup policy settings
+backup_timezone           = "UTC"
+backup_time               = "23:00"
+retention_daily_count     = 7
+retention_weekly_count    = 4
+retention_weekly_weekdays = ["Sunday"]
+
+# Optional: protect a VM
+enable_vm_protection = false
+source_vm_id         = ""

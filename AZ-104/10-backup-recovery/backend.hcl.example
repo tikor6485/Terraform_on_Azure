@@ -1,0 +1,13 @@
+# Example backend config for Azure Storage remote state.
+# Copy to backend.hcl and edit values. Do NOT commit backend.hcl to Git.
+#
+#   cp backend.hcl.example backend.hcl
+#   terraform init -backend-config=backend.hcl -reconfigure
+
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+
+# IMPORTANT: keep the key unique per stack
+key = "az-104/10-backup-recovery/terraform.tfstate"
