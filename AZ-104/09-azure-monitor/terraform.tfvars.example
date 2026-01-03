@@ -1,0 +1,22 @@
+# Example input values.
+# Copy to terraform.tfvars (do not commit) or export TF_VAR_* environment variables.
+
+# Existing RG from stack 01
+resource_group_name = "az-104-dev-rg"
+
+# Region for monitor resources
+location = "northeurope"
+
+# Workspace settings
+log_analytics_sku   = "PerGB2018"
+log_retention_days  = 30
+
+# Optional: App Insights
+enable_application_insights = true
+application_insights_type   = "web"
+
+# Optional: Diagnostic setting
+# Provide a real Azure resource ID if you want to enable diagnostics.
+# diag_target_resource_id = "/subscriptions/<sub>/resourceGroups/<rg>/providers/<RP>/<type>/<name>"
+# diag_log_categories     = ["AllLogs"]
+# diag_metric_categories  = ["AllMetrics"]

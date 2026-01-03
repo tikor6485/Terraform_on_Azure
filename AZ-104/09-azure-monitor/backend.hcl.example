@@ -1,0 +1,14 @@
+# Example backend configuration for the azurerm backend.
+# Copy to backend.hcl and adjust values for your environment.
+#
+# IMPORTANT:
+# - Do not commit backend.hcl (it typically contains environment-specific values).
+# - The storage account and container must already exist.
+
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+
+# Use a unique key per stack so each stack has its own state file.
+key = "az-104/09-azure-monitor/terraform.tfstate"
