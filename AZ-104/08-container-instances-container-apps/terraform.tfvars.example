@@ -1,0 +1,14 @@
+# Example variable values (copy to terraform.tfvars if you want local defaults).
+# Do NOT put secrets here.
+
+# resource_group_name = "az-104-dev-rg"
+
+# location = "northeurope"
+
+# Optional: provide a unique DNS label if you want an FQDN (otherwise use the public IP output).
+# dns_name_label = "az104-dev-aci-yourname-001"
+
+# container_image = "mcr.microsoft.com/azuredocs/aci-helloworld"
+# container_cpu   = 0.5
+# container_memory = 1
+# container_port  = 80

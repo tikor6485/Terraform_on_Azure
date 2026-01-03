@@ -1,0 +1,10 @@
+# Example remote state configuration for AzureRM backend.
+# Copy to backend.hcl and adjust as needed. Do NOT commit backend.hcl.
+
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+
+# IMPORTANT: make the key unique per stack/folder.
+key = "az-104/08-container-instances-container-apps/terraform.tfstate"
