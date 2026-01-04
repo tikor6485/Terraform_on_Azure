@@ -1,0 +1,16 @@
+# terraform.tfvars.example
+# Example inputs. Copy to terraform.tfvars (optional) or set TF_VAR_users via environment variables.
+#
+# IMPORTANT:
+# - Do not commit real passwords.
+# - Consider using a local-only tfvars file (not tracked) or environment variables.
+
+users = [
+  {
+    user_principal_name                = "az104.user1@YOURTENANT.onmicrosoft.com"
+    display_name                       = "AZ-104 Demo User 1"
+    password                           = "ChangeMe_NOW_Use_An_Actual_Strong_Password_123!"
+    force_change_password_next_sign_in = true
+    account_enabled                    = true
+  }
+]
