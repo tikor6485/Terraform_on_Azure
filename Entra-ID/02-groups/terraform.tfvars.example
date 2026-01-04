@@ -1,0 +1,17 @@
+# Example groups definition.
+# Copy to terraform.tfvars and edit.
+
+groups = {
+  "lab_ops" = {
+    display_name = "Lab - Ops"
+    description  = "Operations team (lab)."
+    # owners_object_ids  = ["<owner-object-id>"]
+    # members_object_ids = ["<member-object-id>"]
+    # mail_nickname      = "lab-ops"
+  }
+
+  "lab_dev" = {
+    display_name = "Lab - Dev"
+    description  = "Developers team (lab)."
+  }
+}

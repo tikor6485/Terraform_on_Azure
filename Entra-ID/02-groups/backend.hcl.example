@@ -1,0 +1,10 @@
+# Example backend config (copy to backend.hcl and edit as needed).
+# Do NOT commit backend.hcl. It may contain environment-specific values.
+
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+
+# Keep state keys unique per stack.
+key = "entra-id/02-groups/terraform.tfstate"
