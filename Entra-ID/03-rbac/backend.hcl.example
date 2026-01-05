@@ -1,0 +1,5 @@
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+key                  = "entra-id/03-rbac/terraform.tfstate"

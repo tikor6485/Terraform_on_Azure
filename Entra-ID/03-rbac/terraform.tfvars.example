@@ -1,0 +1,19 @@
+# Example assignments at RG scope (az-104-dev-rg)
+
+assignments = [
+  {
+    key               = "lab-dev-reader"
+    role_name         = "Reader"
+    group_display_name = "Lab - Dev"
+  },
+  {
+    key               = "lab-ops-monitoring-reader"
+    role_name         = "Monitoring Reader"
+    group_display_name = "Lab - Ops"
+  },
+  {
+    key       = "lab-user01-reader"
+    role_name = "Reader"
+    user_upn  = "lab.user01@tikor6485gmail.onmicrosoft.com"
+  }
+]
