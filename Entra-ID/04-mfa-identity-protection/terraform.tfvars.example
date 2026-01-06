@@ -1,0 +1,20 @@
+# Copy to terraform.tfvars and adjust as needed.
+
+# By default we keep Conditional Access disabled to avoid license/permission failures.
+enable_conditional_access = false
+
+# Recommended: start with report-only first when you enable it.
+policy_state = "enabledForReportingButNotEnforced"
+
+# Optional custom name. If empty, a deterministic name is generated.
+policy_display_name = ""
+
+# Target groups by display name (these were created in 02-groups).
+included_group_display_names = [
+  "Lab - Dev"
+]
+
+# Exclude break-glass UPNs if you have them.
+excluded_user_upns = [
+  # "breakglass@yourtenant.onmicrosoft.com"
+]
