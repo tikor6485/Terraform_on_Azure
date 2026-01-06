@@ -1,0 +1,10 @@
+# Example backend config for Azure Storage remote state.
+# Copy to backend.hcl (do not commit backend.hcl) and adjust names if needed.
+
+resource_group_name  = "tfstate-demo-dev-rg"
+storage_account_name = "tfstatedemodevsa"
+container_name       = "tfstate"
+use_azuread_auth     = true
+
+# Keep state keys unique per stack
+key = "entra-id/05-app-registrations/terraform.tfstate"

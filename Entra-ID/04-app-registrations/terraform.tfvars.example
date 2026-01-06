@@ -1,0 +1,11 @@
+# App Registration
+app_display_name  = "entra-id-lab-app"
+sign_in_audience  = "AzureADMyOrg"
+
+# Optional owners (object IDs). If empty, current caller becomes owner.
+owners_object_ids = []
+
+# Client secret
+create_client_secret         = true
+client_secret_display_name   = "terraform-generated"
+client_secret_validity_hours = 720 # 30 days
